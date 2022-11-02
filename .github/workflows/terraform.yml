@@ -1,0 +1,45 @@
+name: 'Terraform'
+on:
+  workflow_dispatch:
+    inputs:
+      choice:
+        type: choice
+        description: Action
+        options: 
+        - TerraformApply
+        - TerraformDestroy
+      environment:
+        type: choice
+        description: Environment
+        options: 
+        - devl
+        - qual
+        - cert
+        - prod     
+jobs:
+  TerraformApply:
+#    if: ${{ inputs.choice }}== 'TerraformApply' 
+    if: ${{ inputs.choice == 'TerraformApply' }}
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Code Checkout
+      uses: actions/checkout@v3
+    - name: Terraform Init
+      run: terraform init
+    - name: Terraform Plan
+      run: terraform init && terraform plan -var-file="env_params/devl.tfvars"
+    - name: Terraform Apply
+      if: "contains(${{ inputs.choice }}==TerraformApply, 'Running Terraform Apply')"
+      run: terraform init && terraform apply -var-file="env_params/${{ inputs.environment }}.tfvars" --auto-approve
+  TerraformDestroy:
+#    if: ${{ inputs.choice }}== 'TerraformApply' 
+    if: ${{ inputs.choice == 'TerraformDestroy' }}
+    name: 'Terraform-D'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Code Checkout
+      uses: actions/checkout@v3
+    - name: Terraform Destroy
+      if: "contains(${{ inputs.choice }}==TerraformDestroy, 'Terraform Destroy')"
+      run: terraform init && terraform destroy -var-file="env_params/${{ inputs.environment }}.tfvars" --auto-approve      
